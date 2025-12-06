@@ -410,7 +410,7 @@
             errorMsg.innerHTML = '';
             
             try {
-                const res = await fetch(API_BASE + '/api/auth/login', {
+                const res = await fetch(API_BASE + '/api/usuarios/iniciar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })

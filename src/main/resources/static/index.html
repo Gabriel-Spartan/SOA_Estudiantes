@@ -24,7 +24,8 @@
                     <small class="d-block opacity-75" style="font-size: 0.8rem;">Gestión de Cursos y Estudiantes</small>
                 </div>
             </a>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-3">
+                <div id="userInfo" class="text-white"></div>
                 <span class="badge bg-light text-primary px-3 py-2">
                     <i class="bi bi-database-fill me-1"></i>MySQL
                 </span>
@@ -61,6 +62,13 @@
                             <small class="d-block text-muted mt-1" style="font-size: 0.75rem;">Vincular estudiantes</small>
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-3 py-3" id="consultar-tab" data-bs-toggle="pill" data-bs-target="#tab-consultar" type="button" role="tab">
+                            <i class="bi bi-search me-2 fs-5"></i>
+                            <span style="font-weight: 600;">Consultar</span>
+                            <small class="d-block text-muted mt-1" style="font-size: 0.75rem;">Ver estudiantes por curso</small>
+                        </button>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -71,7 +79,7 @@
             <!-- TAB: ESTUDIANTES -->
             <div class="tab-pane fade show active" id="tab-estudiantes" role="tabpanel">
                 <div class="row">
-                    <div class="col-12">
+                    <div class="col-12" id="newEstudianteSection">
                         <div class="card shadow-lg border-0 mb-4" style="border-radius: 15px; overflow: hidden;">
                             <div class="card-header bg-primary text-white" style="padding: 1.5rem;">
                                 <h5 class="mb-0 d-flex align-items-center">
@@ -117,7 +125,9 @@
                                 <div id="msgEstudiante" class="mt-3"></div>
                             </div>
                         </div>
-
+                    </div>
+                    
+                    <div class="col-12">
                         <div class="card shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
                             <div class="card-header bg-success text-white d-flex justify-content-between align-items-center" style="padding: 1.5rem;">
                                 <h5 class="mb-0 d-flex align-items-center">
@@ -156,7 +166,7 @@
             <!-- TAB: CURSOS -->
             <div class="tab-pane fade" id="tab-cursos" role="tabpanel">
                 <div class="row">
-                    <div class="col-12">
+                    <div class="col-12" id="newCursoSection">
                         <div class="card shadow-lg border-0 mb-4" style="border-radius: 15px; overflow: hidden;">
                             <div class="card-header bg-danger text-white" style="padding: 1.5rem;">
                                 <h5 class="mb-0 d-flex align-items-center">
@@ -194,7 +204,9 @@
                                 <div id="msgCurso" class="mt-3"></div>
                             </div>
                         </div>
-
+                    </div>
+                    
+                    <div class="col-12">
                         <div class="card shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
                             <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center" style="padding: 1.5rem;">
                                 <h5 class="mb-0 d-flex align-items-center">
@@ -232,7 +244,7 @@
             <!-- TAB: ASIGNACIÓN -->
             <div class="tab-pane fade" id="tab-asignacion" role="tabpanel">
                 <div class="row">
-                    <div class="col-md-6 mb-4">
+                    <div class="col-md-8 mx-auto mb-4">
                         <div class="card shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
                             <div class="card-header bg-info text-white" style="padding: 1.5rem;">
                                 <h5 class="mb-0 d-flex align-items-center">
@@ -267,8 +279,13 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <div class="col-md-6 mb-4">
+            <!-- TAB: CONSULTAR -->
+            <div class="tab-pane fade" id="tab-consultar" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-8 mx-auto mb-4">
                         <div class="card shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
                             <div class="card-header bg-primary text-white" style="padding: 1.5rem;">
                                 <h5 class="mb-0 d-flex align-items-center">
@@ -530,6 +547,6 @@
 
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="app.js?v=30"></script>
+    <script src="app.js?v=31"></script>
 </body>
 </html>

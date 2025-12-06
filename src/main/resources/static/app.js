@@ -2,6 +2,66 @@
 const API_BASE = '';
 
 // ====================================
+// GESTIÓN DE SESIÓN Y PERMISOS
+// ====================================
+let userSession = null;
+
+function verificarSesion() {
+  const session = localStorage.getItem('userSession');
+  if (!session) {
+    window.location.href = 'login.html';
+    return null;
+  }
+  return JSON.parse(session);
+}
+
+function cerrarSesion() {
+  localStorage.removeItem('userSession');
+  window.location.href = 'login.html';
+}
+
+function aplicarPermisos() {
+  if (!userSession) return;
+  
+  const esSecretaria = userSession.rol === 'SECRETARIA';
+  
+  if (esSecretaria) {
+    // Ocultar pestañas de Asignación
+    const tabAsignacion = document.querySelector('button[data-bs-target="#tab-asignacion"]');
+    if (tabAsignacion) {
+      tabAsignacion.closest('li').style.display = 'none';
+    }
+    
+    // Ocultar secciones de crear
+    const newEstudianteSection = document.getElementById('newEstudianteSection');
+    const newCursoSection = document.getElementById('newCursoSection');
+    if (newEstudianteSection) newEstudianteSection.style.display = 'none';
+    if (newCursoSection) newCursoSection.style.display = 'none';
+    
+    // Ocultar columnas de "Acciones" en los headers
+    setTimeout(() => {
+      const headers = document.querySelectorAll('th');
+      headers.forEach(th => {
+        if (th.textContent.includes('Acciones')) {
+          th.style.display = 'none';
+        }
+      });
+    }, 100);
+  }
+}
+
+function ocultarBotonesAccion() {
+  if (!userSession || userSession.rol !== 'SECRETARIA') return;
+  
+  // Ocultar todos los botones de acción en las tablas
+  setTimeout(() => {
+    document.querySelectorAll('.btn-warning, .btn-danger, .btn-info').forEach(btn => {
+      btn.style.display = 'none';
+    });
+  }, 100);
+}
+
+// ====================================
 // VARIABLES GLOBALES
 // ====================================
 let tblEstudiantes;
@@ -112,19 +172,36 @@ async function listarEstudiantes() {
       return;
     }
     
+    const esSecretaria = userSession && userSession.rol === 'SECRETARIA';
+    
     data.forEach(est => {
       const row = document.createElement('tr');
-      row.innerHTML = '<td style="padding: 1rem;">' + est.estCed + '</td>' +
-        '<td style="padding: 1rem;">' + est.estNom + '</td>' +
-        '<td style="padding: 1rem;">' + est.estApe + '</td>' +
-        '<td style="padding: 1rem;">' + est.estDir + '</td>' +
-        '<td style="padding: 1rem;">' + est.estTel + '</td>' +
-        '<td style="padding: 1rem; text-align: center;">' +
-        '<button class="btn btn-sm btn-warning me-1" onclick="abrirEditarEstudiante(\'' + est.estCed + '\')" style="border-radius: 8px;"><i class="bi bi-pencil"></i></button> ' +
-        '<button class="btn btn-sm btn-danger" onclick="eliminarEstudiante(\'' + est.estCed + '\')" style="border-radius: 8px;"><i class="bi bi-trash"></i></button>' +
-        '</td>';
+      
+      if (esSecretaria) {
+        // Secretaria: solo datos, sin columna de acciones
+        row.innerHTML = '<td style="padding: 1rem;">' + est.estCed + '</td>' +
+          '<td style="padding: 1rem;">' + est.estNom + '</td>' +
+          '<td style="padding: 1rem;">' + est.estApe + '</td>' +
+          '<td style="padding: 1rem;">' + est.estDir + '</td>' +
+          '<td style="padding: 1rem;">' + est.estTel + '</td>';
+      } else {
+        // Admin: datos con botones de acción
+        row.innerHTML = '<td style="padding: 1rem;">' + est.estCed + '</td>' +
+          '<td style="padding: 1rem;">' + est.estNom + '</td>' +
+          '<td style="padding: 1rem;">' + est.estApe + '</td>' +
+          '<td style="padding: 1rem;">' + est.estDir + '</td>' +
+          '<td style="padding: 1rem;">' + est.estTel + '</td>' +
+          '<td style="padding: 1rem; text-align: center;">' +
+          '<button class="btn btn-sm btn-warning me-1" onclick="abrirEditarEstudiante(\'' + est.estCed + '\')" style="border-radius: 8px;"><i class="bi bi-pencil"></i></button> ' +
+          '<button class="btn btn-sm btn-danger" onclick="eliminarEstudiante(\'' + est.estCed + '\')" style="border-radius: 8px;"><i class="bi bi-trash"></i></button>' +
+          '</td>';
+      }
+      
       tblEstudiantes.appendChild(row);
     });
+    
+    // Aplicar permisos después de cargar la tabla
+    ocultarBotonesAccion();
   } catch (error) {
     console.error('Error al listar estudiantes:', error);
     mostrarMensaje(msgEstudiante, 'Error al cargar estudiantes', 'danger');
@@ -370,19 +447,35 @@ async function listarCursos() {
       return;
     }
     
+    const esSecretaria = userSession && userSession.rol === 'SECRETARIA';
+    
     data.forEach(curso => {
       const row = document.createElement('tr');
-      row.innerHTML = '<td style="padding: 1rem;">' + curso.curId + '</td>' +
-        '<td style="padding: 1rem;">' + curso.curNom + '</td>' +
-        '<td style="padding: 1rem;">' + (curso.curDesc || 'Sin descripción') + '</td>' +
-        '<td style="padding: 1rem;"><span class="badge bg-info text-dark" style="font-size: 0.95rem; padding: 0.5rem 0.8rem;">' + curso.curCreditos + ' créditos</span></td>' +
-        '<td style="padding: 1rem; text-align: center;">' +
-        '<button class="btn btn-sm btn-info me-1" onclick="verEstudiantesCurso(' + curso.curId + ')" style="border-radius: 8px;"><i class="bi bi-people"></i></button> ' +
-        '<button class="btn btn-sm btn-warning me-1" onclick="abrirEditarCurso(' + curso.curId + ')" style="border-radius: 8px;"><i class="bi bi-pencil"></i></button> ' +
-        '<button class="btn btn-sm btn-danger" onclick="eliminarCurso(' + curso.curId + ')" style="border-radius: 8px;"><i class="bi bi-trash"></i></button>' +
-        '</td>';
+      
+      if (esSecretaria) {
+        // Secretaria: solo datos, sin columna de acciones
+        row.innerHTML = '<td style="padding: 1rem;">' + curso.curId + '</td>' +
+          '<td style="padding: 1rem;">' + curso.curNom + '</td>' +
+          '<td style="padding: 1rem;">' + (curso.curDesc || 'Sin descripción') + '</td>' +
+          '<td style="padding: 1rem;"><span class="badge bg-info text-dark" style="font-size: 0.95rem; padding: 0.5rem 0.8rem;">' + curso.curCreditos + ' créditos</span></td>';
+      } else {
+        // Admin: datos con botones de acción
+        row.innerHTML = '<td style="padding: 1rem;">' + curso.curId + '</td>' +
+          '<td style="padding: 1rem;">' + curso.curNom + '</td>' +
+          '<td style="padding: 1rem;">' + (curso.curDesc || 'Sin descripción') + '</td>' +
+          '<td style="padding: 1rem;"><span class="badge bg-info text-dark" style="font-size: 0.95rem; padding: 0.5rem 0.8rem;">' + curso.curCreditos + ' créditos</span></td>' +
+          '<td style="padding: 1rem; text-align: center;">' +
+          '<button class="btn btn-sm btn-info me-1" onclick="verEstudiantesCurso(' + curso.curId + ')" style="border-radius: 8px;"><i class="bi bi-people"></i></button> ' +
+          '<button class="btn btn-sm btn-warning me-1" onclick="abrirEditarCurso(' + curso.curId + ')" style="border-radius: 8px;"><i class="bi bi-pencil"></i></button> ' +
+          '<button class="btn btn-sm btn-danger" onclick="eliminarCurso(' + curso.curId + ')" style="border-radius: 8px;"><i class="bi bi-trash"></i></button>' +
+          '</td>';
+      }
+      
       tblCursos.appendChild(row);
     });
+    
+    // Aplicar permisos después de cargar la tabla
+    ocultarBotonesAccion();
   } catch (error) {
     console.error('Error al listar cursos:', error);
     mostrarMensaje(msgCurso, 'Error al cargar cursos', 'danger');
@@ -878,6 +971,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const target = e.target.getAttribute('data-bs-target');
       if (target === '#tab-estudiantes') listarEstudiantes();
       if (target === '#tab-cursos') listarCursos();
+      if (target === '#tab-consultar') cargarSelectoresAsignacion();
       if (target === '#tab-asignacion') cargarSelectoresAsignacion();
     });
   });
@@ -905,6 +999,26 @@ document.addEventListener('DOMContentLoaded', () => {
     radio.addEventListener('change', handleTipoConsultaChange);
   });
   
-  // Cargar datos iniciales
-  listarEstudiantes();
+  // Verificar sesión y aplicar permisos PRIMERO
+  userSession = verificarSesion();
+  if (userSession) {
+    // Mostrar información del usuario
+    document.getElementById('userInfo').innerHTML = `
+      <div class="d-flex align-items-center">
+        <span class="me-3">
+          <i class="bi bi-person-circle me-2"></i>
+          <strong>${userSession.nombreCompleto}</strong>
+          <span class="badge bg-${userSession.rol === 'ADMINISTRADOR' ? 'danger' : 'info'} ms-2">${userSession.rol}</span>
+        </span>
+        <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">
+          <i class="bi bi-box-arrow-right me-1"></i>Salir
+        </button>
+      </div>
+    `;
+    
+    aplicarPermisos();
+    
+    // Cargar datos iniciales DESPUÉS de aplicar permisos
+    listarEstudiantes();
+  }
 });
